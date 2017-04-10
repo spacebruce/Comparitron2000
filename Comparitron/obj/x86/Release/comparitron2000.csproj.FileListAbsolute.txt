@@ -1,0 +1,4 @@
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\bin\Release\DivSpitter.exe
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\bin\Release\DivSpitter.pdb
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\obj\x86\Release\DivSpitter.exe
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\obj\x86\Release\DivSpitter.pdb

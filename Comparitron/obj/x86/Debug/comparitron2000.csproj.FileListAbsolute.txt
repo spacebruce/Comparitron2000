@@ -1,0 +1,5 @@
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\bin\Debug\DivSpitter.exe
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\bin\Debug\DivSpitter.pdb
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\obj\x86\Debug\comparitron2000.csprojResolveAssemblyReference.cache
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\obj\x86\Debug\DivSpitter.exe
+C:\Users\noela\Documents\GitHub\witch-comparisons\notes\Comparitron\obj\x86\Debug\DivSpitter.pdb
