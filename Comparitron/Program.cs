@@ -49,10 +49,10 @@ namespace Comparitron
 
                 foreach (var line in script.Frames)
                 {
-                    string tvName = string.Format("tv-{0}.jpg", line.Number);
+                    string tvName = string.Format("tv-{0:D5}.jpg", line.Number);
                     File.Copy(@"old\" + tvName, @"output\" + tvName, true);
 
-                    string bdName = string.Format("bd-{0}.jpg", line.Number);
+                    string bdName = string.Format("bd-{0:D5}.jpg", line.Number);
                     File.Copy(@"new\" + bdName, @"output\" + bdName, true);
                 }
                 Console.WriteLine("Done!");
