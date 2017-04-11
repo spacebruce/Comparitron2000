@@ -1,4 +1,4 @@
-﻿//For licence details see; http://www.wtfpl.net
+//For licence details see; http://www.wtfpl.net
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,104 +26,18 @@ namespace Comparitron
             var outFile = Path.ChangeExtension(inFile, "html");
             var outPath = Directory.GetCurrentDirectory();
 
-            List<string> frames = new List<string>();
-            
-            using (var output = new StreamWriter(outFile))
+            Script script = null;
+            try
             {
-                int lineno = 0;
-
-                string epcode = "changeme"; //Will hopefully get overwritten
-                string pageTitle = "temptitle";
-                string inputLine;
-                string templateName;
-
-                foreach (var line in File.ReadLines(inFile))
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                        continue;
-
-                    Console.WriteLine(line);
-
-                    if (lineno == 0)    //First line for data
-                    {
-                        var parts = line.Split('|'); 
-                        epcode = parts[0].Trim();       //Episode code, for pathing stuff
-                        pageTitle = parts[1].Trim();    //Episode title, for headings and stuff
-
-                        //Insert top of page from file
-                        templateName = outPath + @"\template-start.html";
-                        Console.WriteLine(templateName);
-
-                        if (File.Exists(templateName))
-                        {
-                            using (StreamReader reader = new StreamReader(templateName))
-                            {
-                                inputLine = reader.ReadLine();
-                                while (!reader.EndOfStream)
-                                {
-                                    //Replacey bits
-                                    inputLine = inputLine.Replace(@"PAGENAME", pageTitle);
-                                    inputLine = inputLine.Replace(@"PAGECODE", epcode);
-
-                                    Console.WriteLine(inputLine);
-
-                                    output.WriteLine(inputLine);
-                                    inputLine = reader.ReadLine();
-                                }
-                                reader.Close();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var parts = line.Split('|');
-
-                        if (parts.Length < 2)
-                        {
-                            Console.WriteLine("FORMAT ERROR: dumb line, not enough seperators");
-                            return;
-                        }
-                        if (parts.Length > 2)
-                        {
-                            Console.WriteLine("FORMAT ERROR: help help, too many separators");
-                            return;
-                        }
-
-                        var imagenumber = parts[0].Trim();
-                        var text = parts[1].Trim();
-
-                        frames.Add(imagenumber);
-
-                        output.WriteLine("<li>");
-                        output.WriteLine(text);
-                        output.WriteLine("<div class=\"twentytwenty-container\">");
-                        output.WriteLine("\t<img src=\"./images/{0}/tv-{1}.jpg\" />", epcode,imagenumber);
-                        output.WriteLine("\t<img src=\"./images/{0}/bd-{1}.jpg\" />", epcode,imagenumber);
-                        output.WriteLine("</div>");
-                        output.WriteLine("</li>");
-                    }
-
-                    lineno++;
-                }
-
-                //Insert bottom of page
-                templateName = outPath + @"\template-end.html";
-                if (File.Exists(templateName))
-                {
-                    using (StreamReader reader = new StreamReader(templateName))
-                    {
-                        inputLine = reader.ReadLine();
-                        while (!reader.EndOfStream)
-                        {
-                            Console.WriteLine(inputLine);
-
-                            output.WriteLine(inputLine);
-                            inputLine = reader.ReadLine();
-                        }
-                        reader.Close();
-                    }
-                }
+                script = ReadScript(inFile, true);
             }
+            catch (FormatException e)
+            {
+                Console.WriteLine("FORMAT ERROR: {0}", e.Message);
+                return;
+            }
+
+            WriteScript(script, outFile, outPath, true);
 
             Console.WriteLine("HTML written to {0}", outFile);
 
@@ -133,22 +47,113 @@ namespace Comparitron
                 if (!Directory.Exists(@"output"))
                     Directory.CreateDirectory(@"output");
 
-                foreach (var line in frames)
+                foreach (var line in script.Frames)
                 {
-                    string tvName = string.Format("tv-{0}.jpg", line);
-                    if (File.Exists(@"output\" + tvName))
-                        File.Delete(@"output\" + tvName);
-                    File.Copy(@"old\" + tvName, @"output\" + tvName);
+                    string tvName = string.Format("tv-{0}.jpg", line.Number);
+                    File.Copy(@"old\" + tvName, @"output\" + tvName, true);
 
-                    string bdName = string.Format("bd-{0}.jpg", line);
-                    if (File.Exists(@"output\" + bdName))
-                        File.Delete(@"output\" + bdName);
-                    File.Copy(@"new\" + bdName, @"output\" + bdName);
+                    string bdName = string.Format("bd-{0}.jpg", line.Number);
+                    File.Copy(@"new\" + bdName, @"output\" + bdName, true);
                 }
                 Console.WriteLine("Done!");
             }
 
             Console.WriteLine("All done, go home");
+        }
+
+        static Script ReadScript(string inFile, bool debug)
+        {
+            Script result = null;
+            int lineno = 0;
+            foreach (var line in File.ReadLines(inFile))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                if(debug) Console.WriteLine(line);
+
+                var parts = line.Split('|');
+
+                if (parts.Length < 2)
+                {
+                    throw new FormatException("not enough seperators");
+                }
+                else if (parts.Length > 2)
+                {
+                    throw new FormatException("too many separators");
+                }
+
+                if (lineno == 0)    //First line for data
+                {         
+                    var epcode = parts[0].Trim();   //Episode code, for pathing stuff
+                    var title = parts[1].Trim();    //Episode title, for headings and stuff
+                    result = new Script(title, epcode);
+                }
+                else
+                {
+                    var imageNumber = parts[0].Trim();
+
+                    int number = 0;
+
+                    if (!int.TryParse(imageNumber, out number))
+                    {
+                        throw new FormatException(string.Format("image number not number at line {0}", lineno));
+                    }
+
+                    var text = parts[1].Trim();
+
+                    result.Frames.Add(new Frame(number, text));
+                }
+                ++lineno;
+            }
+            return result;
+        }
+
+        static void WriteScript(Script script, string outFile, string outPath, bool debug)
+        {
+            using (var output = new StreamWriter(outFile))
+            {
+                //Insert top of page from file
+                var templateStartName = Path.Combine(outPath, "template-start.html");
+                Console.WriteLine(templateStartName);
+
+                if (File.Exists(templateStartName))
+                {
+                    foreach(var line in File.ReadLines(templateStartName))
+                    {
+                        //Replacey bits
+                        var outLine = line;
+                        outLine = outLine.Replace(@"PAGECODE", script.Epcode);
+                        outLine = outLine.Replace(@"PAGENAME", script.Title);
+
+                        if (debug) Console.WriteLine(outLine);
+
+                        output.WriteLine(outLine);
+                    }
+                }
+
+                foreach(var frame in script.Frames)
+                {
+                    output.WriteLine("<li>");
+                    output.WriteLine(frame.Text);
+                    output.WriteLine("<div class=\"twentytwenty-container\">");
+                    output.WriteLine("\t<img src=\"./images/{0}/tv-{1}.jpg\" />", script.Epcode, frame.Number);
+                    output.WriteLine("\t<img src=\"./images/{0}/bd-{1}.jpg\" />", script.Epcode, frame.Number);
+                    output.WriteLine("</div>");
+                    output.WriteLine("</li>");
+                }
+
+                //Insert bottom of page
+                var templateEndName = outPath + @"\template-end.html";
+                if (File.Exists(templateEndName))
+                {
+                    foreach (var line in File.ReadLines(templateEndName))
+                    {
+                        if(debug) Console.WriteLine(line);
+                        output.WriteLine(line);
+                    }
+                }
+            }
         }
     }
 }
