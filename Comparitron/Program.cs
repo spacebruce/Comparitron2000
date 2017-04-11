@@ -137,8 +137,8 @@ namespace Comparitron
                     output.WriteLine("<li>");
                     output.WriteLine(frame.Text);
                     output.WriteLine("<div class=\"twentytwenty-container\">");
-                    output.WriteLine("\t<img src=\"./images/{0}/tv-{1}.jpg\" />", script.Epcode, frame.Number);
-                    output.WriteLine("\t<img src=\"./images/{0}/bd-{1}.jpg\" />", script.Epcode, frame.Number);
+                    output.WriteLine("\t<img src=\"./images/{0}/tv-{1:D5}.jpg\" />", script.Epcode, frame.Number);
+                    output.WriteLine("\t<img src=\"./images/{0}/bd-{1:D5}.jpg\" />", script.Epcode, frame.Number);
                     output.WriteLine("</div>");
                     output.WriteLine("</li>");
                 }
