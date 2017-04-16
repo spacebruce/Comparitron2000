@@ -17,7 +17,7 @@ namespace Comparitron
                 Console.WriteLine("Feed me a file formatted:");
                 Console.WriteLine("Episode code | Page title - On the first line. Example : E1M1|At Dooms Gate");
                 Console.WriteLine("framenum | witty caption   - Until the end of the file. Example :  01130|Nice hat!");
-                Console.WriteLine("Blank lines are ok, but otherwise deviating from screw things up.");
+                Console.WriteLine("Blank lines are ok, but otherwise deviating from the above will screw things up.");
                 Console.ReadKey();
                 return;
             }
@@ -132,15 +132,32 @@ namespace Comparitron
                     }
                 }
 
-                foreach(var frame in script.Frames)
+
+                //foreach (var frame in script.Frames)
+                for (var i=0; i< script.Frames.Count; ++i)
                 {
-                    output.WriteLine("<li>");
-                    output.WriteLine(frame.Text);
+                    Frame frame = script.Frames[i];
+                    Frame nextFrame = null;
+
+                    if (i < script.Frames.Count- 1) //if within bounds, swap with actual frame.
+                    {
+                        nextFrame = script.Frames[i + 1];
+                    }
+
+                    if (frame.Text != "")
+                    {
+                        output.WriteLine("<li>");
+                        output.WriteLine(frame.Text);
+                    }
                     output.WriteLine("<div class=\"twentytwenty-container\">");
                     output.WriteLine("\t<img src=\"./images/{0}/tv-{1:D5}.jpg\" />", script.Epcode, frame.Number);
                     output.WriteLine("\t<img src=\"./images/{0}/bd-{1:D5}.jpg\" />", script.Epcode, frame.Number);
                     output.WriteLine("</div>");
-                    output.WriteLine("</li>");
+
+                    if ((nextFrame == null) || (nextFrame.Text != ""))  //if next frame exists but has no text, cap this one off.
+                    {
+                        output.WriteLine("</li>");
+                    }
                 }
 
                 //Insert bottom of page
