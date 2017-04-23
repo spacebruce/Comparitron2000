@@ -16,6 +16,7 @@ namespace Comparitron
                 Console.WriteLine("Usage:");
                 Console.WriteLine("Feed me a file formatted:");
                 Console.WriteLine("Episode code | Page title - On the first line. Example : E1M1|At Dooms Gate");
+                Console.WriteLine("Description text - On the second line. Example : Lorum ipsum whateverum.");
                 Console.WriteLine("framenum | witty caption   - Until the end of the file. Example :  01130|Nice hat!");
                 Console.WriteLine("Blank lines are ok, but otherwise deviating from the above will screw things up.");
                 Console.ReadKey();
