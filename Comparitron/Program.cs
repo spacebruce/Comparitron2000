@@ -74,14 +74,7 @@ namespace Comparitron
 
                 var parts = line.Split('|');
 
-                if (parts.Length < 2)
-                {
-                    throw new FormatException("not enough seperators");
-                }
-                else if (parts.Length > 2)
-                {
-                    throw new FormatException("too many separators");
-                }
+               
 
                 if (lineno == 0)    //First line for data
                 {         
@@ -89,8 +82,21 @@ namespace Comparitron
                     var title = parts[1].Trim();    //Episode title, for headings and stuff
                     result = new Script(title, epcode);
                 }
-                else
+                if (lineno == 1)   //Second line contains page description text
                 {
+                    result = new Script(result.Title, result.Epcode, line);
+                }
+                if (lineno >= 2) //Common case goes 3rd for optimisation reasons (sarcasm)
+                {
+                    if (parts.Length < 2)
+                    {
+                        throw new FormatException("not enough seperators");
+                    }
+                    else if (parts.Length > 2)
+                    {
+                        throw new FormatException("too many separators");
+                    }
+
                     var imageNumber = parts[0].Trim();
 
                     int number = 0;
@@ -104,6 +110,7 @@ namespace Comparitron
 
                     result.Frames.Add(new Frame(number, text));
                 }
+
                 ++lineno;
             }
             return result;
@@ -125,15 +132,14 @@ namespace Comparitron
                         var outLine = line;
                         outLine = outLine.Replace(@"PAGECODE", script.Epcode);
                         outLine = outLine.Replace(@"PAGENAME", script.Title);
+                        outLine = outLine.Replace(@"PAGETEXT", script.Text);
 
                         if (debug) Console.WriteLine(outLine);
 
                         output.WriteLine(outLine);
                     }
                 }
-
-
-                //foreach (var frame in script.Frames)
+                
                 for (var i=0; i< script.Frames.Count; ++i)
                 {
                     Frame frame = script.Frames[i];
