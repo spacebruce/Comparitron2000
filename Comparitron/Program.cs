@@ -68,15 +68,10 @@ namespace Comparitron
             int lineno = 0;
             foreach (var line in File.ReadLines(inFile))
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
                 if(debug) Console.WriteLine(line);
 
                 var parts = line.Split('|');
-
-               
-
+                
                 if (lineno == 0)    //First line for data
                 {         
                     var epcode = parts[0].Trim();   //Episode code, for pathing stuff
@@ -87,8 +82,9 @@ namespace Comparitron
                 {
                     result = new Script(result.Title, result.Epcode, line);
                 }
-                if (lineno >= 2) //Common case goes 3rd for optimisation reasons (sarcasm)
+                if ((lineno >= 2) && (!string.IsNullOrWhiteSpace(line)))    //Common case goes 3rd for optimisation reasons (sarcasm)
                 {
+                
                     if (parts.Length < 2)
                     {
                         throw new FormatException("not enough seperators");
@@ -133,7 +129,15 @@ namespace Comparitron
                         var outLine = line;
                         outLine = outLine.Replace(@"PAGECODE", script.Epcode);
                         outLine = outLine.Replace(@"PAGENAME", script.Title);
-                        outLine = outLine.Replace(@"PAGETEXT", script.Text);
+
+                        if (!String.IsNullOrEmpty(script.Text))  //If there's some description text, fill it in.
+                        {
+                            outLine = outLine.Replace(@"PAGETEXT", script.Text + "<hr/>");
+                        }
+                        else
+                        {
+                            outLine = outLine.Replace(@"PAGETEXT", ""); 
+                        }
 
                         if (debug) Console.WriteLine(outLine);
 
